@@ -1,2 +1,5 @@
 .DS_Store
 outputs
+notebook/.ipynb_checkpoints
+*/.ipynb_checkpoints
+*/__pycache__
