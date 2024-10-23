@@ -1,13 +1,15 @@
+import shutil
+import os
+
 def log(file_path: str, text: str) -> None:
     """
     Send log into log file using append method
     file_path: str
     text: str
     """
-    pass
+    with open(file_path, 'a') as f:
+        f.writelines(f"\n{text}")
 
-
-import os
 
 def get_folder_size(folder_path: str) -> float:
     """
@@ -21,3 +23,13 @@ def get_folder_size(folder_path: str) -> float:
     return round(total_size / (1024 * 1024), 2)  # Mengonversi byte ke MB
 
 
+def rmtree(folder_path:str) -> None:
+    try:
+        shutil.rmtree(folder_path)
+        print(f"Folder '{folder_path}' telah dihapus beserta isinya.")
+    except FileNotFoundError:
+        print(f"Folder '{folder_path}' tidak ditemukan.")
+    except PermissionError:
+        print(f"Tidak memiliki izin untuk menghapus folder '{folder_path}'.")
+    except Exception as e:
+        print(f"Terjadi kesalahan: {e}")
