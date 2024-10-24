@@ -88,8 +88,10 @@ def calculate_cmyk_percentage(image_path):
     y_percent = np.mean(cmyk_array[:, :, 2]) * 100
     k_percent = np.mean(cmyk_array[:, :, 3]) * 100
     
-    # Output persentase
-    print(f"Persentase C: {c_percent:.2f}%")
-    print(f"Persentase M: {m_percent:.2f}%")
-    print(f"Persentase Y: {y_percent:.2f}%")
-    print(f"Persentase K: {k_percent:.2f}%")
+    # # Output persentase
+    # print(f"Persentase C: {c_percent:.2f}%")
+    # print(f"Persentase M: {m_percent:.2f}%")
+    # print(f"Persentase Y: {y_percent:.2f}%")
+    # print(f"Persentase K: {k_percent:.2f}%")
+
+    return round(c_percent, 2), round(m_percent, 2), round(y_percent, 2), round(k_percent, 2)
