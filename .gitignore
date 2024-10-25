@@ -3,3 +3,8 @@ outputs
 notebook/.ipynb_checkpoints
 */.ipynb_checkpoints
 */__pycache__
+*/*/.ipynb_checkpoints
+*/*/__pycache__
+*/*/*/.ipynb_checkpoints
+*/*/*/__pycache__
+datasets/converted_images
