@@ -1,8 +1,13 @@
 import shutil
 import os
 import re
+import PIL
 from PIL import Image
 import numpy as np
+import pypdfium2 as pdfium
+import pickle
+import time
+import pandas as pd
 
 def log(file_path: str, text: str) -> None:
     """
@@ -13,6 +18,34 @@ def log(file_path: str, text: str) -> None:
     with open(file_path, 'a') as f:
         f.writelines(f"\n{text}")
 
+def predict_pdf(file_path):
+    # Check file type, must be pdf
+    if file_path.split('.')[-1].lower() != 'pdf':
+        raise Exception("FileExtensionError: File must be pdf")
+    
+    # Check file page type, must be A4
+    # later
+    output = {'time': [], 'label': []}
+    
+    pdf = pdfium.PdfDocument(file_path)
+    for i in range(len(pdf)):
+        start = time.time()
+        bitmap = pdf[i].render(
+            scale = 1/72 * 5, # 5 DPI
+            rotation = 0, 
+        )
+        pil_image = bitmap.to_pil()
+        res = sum(calculate_cmyk_percentage(pil_image))
+        kmeans, scaler = pickle.load(open('../models/kmeans_and_scaler.pkl', 'rb'))
+        label_pred = kmeans.predict(scaler.transform([[res]]))[0]
+        print(f"page-{i+1}:", label_pred)
+        
+        output['time'].append(time.time() - start)
+        output['label'].append(label_pred)
+        del start, bitmap, pil_image, res, kmeans, scaler, label_pred
+    return pd.DataFrame(output)
+        
+        
 
 def get_folder_size(folder_path: str) -> float:
     """
@@ -54,10 +87,23 @@ def prepend_zero(file_name):
     return result
 
 # Fungsi untuk konversi RGB ke CMYK
-def rgb_to_cmyk(image_path):
-    # Membuka gambar dari path dan konversi ke RGB
-    img = Image.open(image_path).convert("RGB")
+def rgb_to_cmyk(image_path_or_pil_img):
+    print(type(image_path_or_pil_img) == str, isinstance(image_path_or_pil_img, PIL.Image.Image))
+    if not type(image_path_or_pil_img) == str and not isinstance(image_path_or_pil_img, PIL.Image.Image):
+        raise Exception("ImportError: image_path_or_pil_img must be str or PIL.Image.Image, not", type(image_path_or_pil_img))
+
+    if type(image_path_or_pil_img) == str:
+        if image_path_or_pil_img.split('.')[-1].lower() not in ['jpg', 'png', 'jpeg', 'webp', 'heic']:
+            raise Exception("FileExtensionError: file type must be an image format")
     
+    # Membuka gambar dari path dan konversi ke RGB
+    img = None
+    if type(image_path_or_pil_img) == str:
+        img = Image.open(image_path_or_pil_img).convert("RGB")
+
+    else:
+        img = image_path_or_pil_img
+
     # Konversi gambar menjadi array NumPy
     img_array = np.array(img) / 255.0
     
@@ -76,6 +122,7 @@ def rgb_to_cmyk(image_path):
     
     # Gabungkan dalam array CMYK
     return np.dstack((c, m, y, k))
+
 
 # Fungsi untuk menghitung persentase komponen CMYK
 def calculate_cmyk_percentage(image_path):
