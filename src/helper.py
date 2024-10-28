@@ -18,6 +18,27 @@ def log(file_path: str, text: str) -> None:
     with open(file_path, 'a') as f:
         f.writelines(f"\n{text}")
 
+def label_to_price(df_output, verbose=False):
+    """df_output: output of predict_pdf function"""
+    df = df_output.copy()
+    df['label'] = df['label'].map({0:1000, 4:1000, 1:2000, 3:2000, 5:2000, 2:500})
+    n_pages_500 = len(df[df['label'] == 500])
+    n_pages_1000 = len(df[df['label'] == 1000])
+    n_pages_2000 = len(df[df['label'] == 2000])
+
+    if verbose:
+        print(f"""
+            500  x n_pages_500 \t= {500 * n_pages_500}
+            1000 x n_pages_1000 \t= {1000 * n_pages_1000}
+            2000 x n_pages_2000 \t= {2000 * n_pages_2000}
+        """)
+    return {
+            'pages_price_500': 500 * n_pages_500,
+            'pages_price_1000': 1000 * n_pages_1000,
+            'pages_price_2000': 2000 * n_pages_2000,
+            'price_total': sum(df['label'])
+           }
+
 def predict_pdf(file_path):
     # Check file type, must be pdf
     if file_path.split('.')[-1].lower() != 'pdf':
@@ -26,6 +47,8 @@ def predict_pdf(file_path):
     # Check file page type, must be A4
     # later
     output = {'time': [], 'label': []}
+
+    price = {}
     
     pdf = pdfium.PdfDocument(file_path)
     for i in range(len(pdf)):
