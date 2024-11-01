@@ -8,6 +8,10 @@ import pypdfium2 as pdfium
 import pickle
 import time
 import pandas as pd
+from werkzeug.datastructures.file_storage import FileStorage
+import random
+import matplotlib.pyplot as plt
+import json
 
 def log(file_path: str, text: str) -> None:
     """
@@ -21,10 +25,16 @@ def log(file_path: str, text: str) -> None:
 def label_to_price(df_output, verbose=False):
     """df_output: output of predict_pdf function"""
     df = df_output.copy()
-    df['label'] = df['label'].map({0:1000, 4:1000, 1:2000, 3:2000, 5:2000, 2:500})
-    n_pages_500 = len(df[df['label'] == 500])
-    n_pages_1000 = len(df[df['label'] == 1000])
-    n_pages_2000 = len(df[df['label'] == 2000])
+    price_label = json.load(open('../models/price_label.json'))
+    price_map = {}
+    for i, price in enumerate(price_label['prices']):
+        price_map[i] = price  
+    df['price'] = df['label'].map(price_map)
+    n_pages_500 = len(df[df['price'] == 500])
+    n_pages_1000 = len(df[df['price'] == 1000])
+    n_pages_1500 = len(df[df['price'] == 1500])
+    n_pages_2000 = len(df[df['price'] == 2000])
+    print(df)
 
     if verbose:
         print(f"""
@@ -32,25 +42,33 @@ def label_to_price(df_output, verbose=False):
             1000 x n_pages_1000 \t= {1000 * n_pages_1000}
             2000 x n_pages_2000 \t= {2000 * n_pages_2000}
         """)
-    return {
-            'pages_price_500': 500 * n_pages_500,
-            'pages_price_1000': 1000 * n_pages_1000,
-            'pages_price_2000': 2000 * n_pages_2000,
-            'price_total': sum(df['label'])
+    output = {
+                'items': [
+                            (n_pages_500, 500),
+                            (n_pages_1000, 1000),
+                            (n_pages_1500, 1500),
+                            (n_pages_2000, 2000),
+                        ],
+                'price_total': sum(df['price'])
            }
+    del df
+    return output
+ 
 
-def predict_pdf(file_path):
+def predict_pdf(file_path_or_pdf_bytes):
     # Check file type, must be pdf
-    if file_path.split('.')[-1].lower() != 'pdf':
-        raise Exception("FileExtensionError: File must be pdf")
+    if not type(file_path_or_pdf_bytes) == str and isinstance(file_path_or_pdf_bytes, FileStorage) == False:
+        raise Exception("FileTypeERROR: File must be a path or pdf file bytes")
     
+    if type(file_path_or_pdf_bytes) == str:
+        if file_path_or_pdf_bytes.split('.')[-1].lower() != 'pdf':
+            raise Exception("FileExtensionError: File must be pdf")
+        
     # Check file page type, must be A4
     # later
     output = {'time': [], 'label': []}
-
-    price = {}
     
-    pdf = pdfium.PdfDocument(file_path)
+    pdf = pdfium.PdfDocument(file_path_or_pdf_bytes)
     for i in range(len(pdf)):
         start = time.time()
         bitmap = pdf[i].render(
@@ -60,7 +78,7 @@ def predict_pdf(file_path):
         pil_image = bitmap.to_pil()
         res = sum(calculate_cmyk_percentage(pil_image))
         kmeans, scaler = pickle.load(open('../models/kmeans_and_scaler.pkl', 'rb'))
-        label_pred = kmeans.predict(scaler.transform([[res]]))[0]
+        label_pred = kmeans.predict(scaler.transform([pd.Series({'sum': res})]))[0]
         print(f"page-{i+1}:", label_pred)
         
         output['time'].append(time.time() - start)
@@ -111,7 +129,7 @@ def prepend_zero(file_name):
 
 # Fungsi untuk konversi RGB ke CMYK
 def rgb_to_cmyk(image_path_or_pil_img):
-    print(type(image_path_or_pil_img) == str, isinstance(image_path_or_pil_img, PIL.Image.Image))
+    # print(type(image_path_or_pil_img) == str, isinstance(image_path_or_pil_img, PIL.Image.Image))
     if not type(image_path_or_pil_img) == str and not isinstance(image_path_or_pil_img, PIL.Image.Image):
         raise Exception("ImportError: image_path_or_pil_img must be str or PIL.Image.Image, not", type(image_path_or_pil_img))
 
@@ -165,3 +183,21 @@ def calculate_cmyk_percentage(image_path):
     # print(f"Persentase K: {k_percent:.2f}%")
 
     return round(c_percent, 2), round(m_percent, 2), round(y_percent, 2), round(k_percent, 2)
+
+# Fungsi menampilkan 8 gambar untuk label tertentu
+def show_clustered_image(df, label):
+    img_index_tobe_showed = list(df[df['label']==label].index)
+
+    # Show 8 image only
+    if len(img_index_tobe_showed) > 8:
+        img_index_tobe_showed = random.sample(img_index_tobe_showed, 8)
+
+    fig, ax = plt.subplots(1, len(img_index_tobe_showed))
+    
+    for i, img_index in enumerate(img_index_tobe_showed):
+        plt.grid = False
+        ax[i].imshow(plt.imread(f'../outputs/pdfium_200dpi/{prepend_zero(str(img_index+1))}'))
+        ax[i].set_title(f"page-{img_index+1}")
+
+    fig.set_figheight(10)
+    fig.set_figwidth(60)

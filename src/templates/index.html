@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Cost</title>
+</head>
+<body>
+  <h1>Print Cost App</h1>
+  <p>"Clear Prices, Print with Confidence!"</p>
+  <form action="/" method="post" enctype="multipart/form-data" accept="pdf">
+    <input type="file" name="pdf_file" accept=".pdf">
+    <button type="submit">upload</button>
+    <button><a href="/">Reset</a></button>
+  </form>
+  {% if data %}
+  <table border="1">
+    <thead>
+       <tr>
+          <th scope="col" width="70">Harga</th>
+          <th scope="col" align="center">Jumlah Halaman</th>
+          <th scope="col" align="right" width="100">Sub Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in data['items']%}
+        {% if item[0] > 0 %}
+        <tr>
+            <td>Rp.{{ item[1] }}</td>
+            <td align="center">{{ item[0] }}</td>
+            <td align="right"> Rp.{{ item[0] * item[1] }}</td>
+        </tr>
+        {% endif %}
+      {% endfor %}
+      <tr>
+        <td colspan="2" align="center"><b>Total</b></td>
+        <td align="right"><b>Rp.{{ data['price_total'] }}</b></td>
+      </tr>
+    </table>
+  {% endif %}
+</body>
+</html>
