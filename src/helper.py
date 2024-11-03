@@ -16,10 +16,11 @@ import json
 def label_to_price(df_output, verbose=False):
     """df_output: output of predict_pdf function"""
     df = df_output.copy()
-    price_label = json.load(open('../models/price_label.json'))
+    json_label_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'price_label.json')
+    price_label = json.load(open(json_label_path))
     price_map = {}
     for i, price in enumerate(price_label['prices']):
-        price_map[i] = price  
+        price_map[i] = price
     df['price'] = df['label'].map(price_map)
     n_pages_500 = len(df[df['price'] == 500])
     n_pages_1000 = len(df[df['price'] == 1000])
@@ -68,7 +69,8 @@ def predict_pdf(file_path_or_pdf_bytes):
         )
         pil_image = bitmap.to_pil()
         res = sum(calculate_cmyk_percentage(pil_image))
-        kmeans, scaler = pickle.load(open('../models/kmeans_and_scaler.pkl', 'rb'))
+        model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'kmeans_and_scaler.pkl')
+        kmeans, scaler = pickle.load(open(model_path, 'rb'))
         label_pred = kmeans.predict(scaler.transform([pd.Series({'sum': res})]))[0]
         print(f"page-{i+1}:", label_pred)
         
