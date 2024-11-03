@@ -13,15 +13,6 @@ import random
 import matplotlib.pyplot as plt
 import json
 
-def log(file_path: str, text: str) -> None:
-    """
-    Send log into log file using append method
-    file_path: str
-    text: str
-    """
-    with open(file_path, 'a') as f:
-        f.writelines(f"\n{text}")
-
 def label_to_price(df_output, verbose=False):
     """df_output: output of predict_pdf function"""
     df = df_output.copy()
@@ -86,46 +77,6 @@ def predict_pdf(file_path_or_pdf_bytes):
         del start, bitmap, pil_image, res, kmeans, scaler, label_pred
     return pd.DataFrame(output)
         
-        
-
-def get_folder_size(folder_path: str) -> float:
-    """
-    Get size of specific folder
-    """
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(folder_path):
-        for filename in filenames:
-            filepath = os.path.join(dirpath, filename)
-            total_size += os.path.getsize(filepath)
-    return round(total_size / (1024 * 1024), 2)  # Mengonversi byte ke MB
-
-
-def rmtree(folder_path:str) -> None:
-    try:
-        shutil.rmtree(folder_path)
-        print(f"Folder '{folder_path}' telah dihapus beserta isinya.")
-    except FileNotFoundError:
-        print(f"Folder '{folder_path}' tidak ditemukan.")
-    except PermissionError:
-        print(f"Tidak memiliki izin untuk menghapus folder '{folder_path}'.")
-    except Exception as e:
-        print(f"Terjadi kesalahan: {e}")
-
-def prepend_zero(file_name):
-    """
-    Prepend string contains number with 0 up to 999
-    example: something-1.jpg -> something-001.jpg
-    """
-    number = int(re.findall("\d+", file_name)[0])
-    result = 'page-'
-    if number / 10 < 1:
-        result = f"{result}00{number}.jpg"
-    elif number / 10 < 10:
-        result = f"{result}0{number}.jpg"
-    else:
-        result = f"{result}{number}.jpg"
-
-    return result
 
 # Fungsi untuk konversi RGB ke CMYK
 def rgb_to_cmyk(image_path_or_pil_img):
