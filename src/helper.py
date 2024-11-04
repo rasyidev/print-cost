@@ -64,7 +64,7 @@ def predict_pdf(file_path_or_pdf_bytes):
     for i in range(len(pdf)):
         start = time.time()
         bitmap = pdf[i].render(
-            scale = 1/72 * 5, # 5 DPI
+            scale = 1/72 * 50, # 50 DPI
             rotation = 0, 
         )
         pil_image = bitmap.to_pil()
