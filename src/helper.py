@@ -166,9 +166,9 @@ def rgb_to_cmyk(image_path_or_pil_img):
 
 
 # Fungsi untuk menghitung persentase komponen CMYK
-def calculate_cmyk_percentage(image_path):
+def calculate_cmyk_percentage(image_path_or_pil_image):
     # Konversi RGB ke CMYK
-    cmyk_array = rgb_to_cmyk(image_path)
+    cmyk_array = rgb_to_cmyk(image_path_or_pil_image)
     
     # Menghitung rata-rata persentase dari setiap channel (C, M, Y, K)
     c_percent = np.mean(cmyk_array[:, :, 0]) * 100
