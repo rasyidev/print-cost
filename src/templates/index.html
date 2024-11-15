@@ -28,13 +28,13 @@
         <tr>
             <td>Rp.{{ item[1] }}</td>
             <td align="center">{{ item[0] }}</td>
-            <td align="right"> Rp.{{ item[0] * item[1] }}</td>
+            <td align="right"> Rp{{ item[0] * item[1] }}</td>
         </tr>
         {% endif %}
       {% endfor %}
       <tr>
         <td colspan="2" align="center"><b>Total</b></td>
-        <td align="right"><b>Rp.{{ data['price_total'] }}</b></td>
+        <td align="right"><b>Rp{{ data['price_total'] }}</b></td>
       </tr>
     </table>
   {% endif %}
