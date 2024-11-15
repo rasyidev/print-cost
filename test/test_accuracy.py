@@ -35,6 +35,7 @@ for doc_file in os.listdir(os.path.join(ROOT_DIR, 'datasets', 'test-set')):
   if doc_file.split(".")[-1] == 'pdf':
     doc = pdfium.PdfDocument(os.path.join(curr_dir, doc_file))
     for i, page in enumerate(doc):
+      print(doc_file, "Page:", i+1)
       res300 = render_and_predict(page, 300)
       res50 = render_and_predict(page, 50)
       res5 = render_and_predict(page, 5)
