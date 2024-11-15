@@ -13,6 +13,8 @@ import random
 import matplotlib.pyplot as plt
 import json
 
+ROOT_DIR = os.path.join(os.path.dirname(__file__), '../')
+
 def log(file_path: str, text: str) -> None:
     """
     Send log into log file using append method
@@ -25,7 +27,7 @@ def log(file_path: str, text: str) -> None:
 def label_to_price(df_output, verbose=False):
     """df_output: output of predict_pdf function"""
     df = df_output.copy()
-    price_label = json.load(open('../models/price_label.json'))
+    price_label = json.load(open(os.path.join(ROOT_DIR, 'models/price_label.json')))
     price_map = {}
     for i, price in enumerate(price_label['prices']):
         price_map[i] = price  
@@ -72,12 +74,12 @@ def predict_pdf(file_path_or_pdf_bytes):
     for i in range(len(pdf)):
         start = time.time()
         bitmap = pdf[i].render(
-            scale = 1/72 * 5, # 5 DPI
+            scale = 1/72 * 300, # 5 DPI
             rotation = 0, 
         )
         pil_image = bitmap.to_pil()
         res = sum(calculate_cmyk_percentage(pil_image))
-        kmeans, scaler = pickle.load(open('../models/kmeans_and_scaler.pkl', 'rb'))
+        kmeans, scaler = pickle.load(open(os.path.join(ROOT_DIR, 'models', 'kmeans_and_scaler.pkl'), 'rb'))
         label_pred = kmeans.predict(scaler.transform([pd.Series({'sum': res})]))[0]
         print(f"page-{i+1}:", label_pred)
         
