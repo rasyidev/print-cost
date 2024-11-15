@@ -47,4 +47,4 @@ for doc_file in os.listdir(os.path.join(ROOT_DIR, 'datasets', 'test-set')):
   print(doc_file)
 
 df = pd.DataFrame(df_json)
-df.to_csv(os.path.join(ROOT_DIR, 'outputs', 'dpi_300_50_5_accuracy.csv'), index=False)
+df.to_csv(os.path.join(ROOT_DIR, 'datasets', 'test-set', 'dpi_300_50_5_accuracy.csv'), index=False)
