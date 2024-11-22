@@ -188,18 +188,25 @@ def calculate_cmyk_percentage(image_path_or_pil_image):
 
 # Fungsi menampilkan 8 gambar untuk label tertentu
 def show_clustered_image(df, label):
-    img_index_tobe_showed = list(df[df['label']==label].index)
-
-    # Show 8 image only
+    img_index_tobe_showed = list(df[df['label'] == label].index)
+    
+    # Show 8 images only
     if len(img_index_tobe_showed) > 8:
         img_index_tobe_showed = random.sample(img_index_tobe_showed, 8)
-
+    
+    # Buat subplot
     fig, ax = plt.subplots(1, len(img_index_tobe_showed))
     
+    # Jika hanya ada satu gambar, ax tidak berupa array
+    if len(img_index_tobe_showed) == 1:
+        ax = [ax]  # Mengubah ax menjadi list agar bisa diakses dengan indeks
+    
     for i, img_index in enumerate(img_index_tobe_showed):
-        plt.grid = False
-        ax[i].imshow(plt.imread(f'../outputs/pdfium_200dpi/{prepend_zero(str(img_index+1))}'))
-        ax[i].set_title(f"page-{img_index+1}")
-
+        ax[i].imshow(plt.imread(f'../outputs/pdfium_150dpi/{prepend_zero(str(img_index + 1))}'))
+        ax[i].set_title(f"page-{img_index + 1}")
+        ax[i].axis('off')  # Matikan axis supaya gambar lebih jelas
+    
+    # Menyesuaikan ukuran gambar
     fig.set_figheight(10)
     fig.set_figwidth(60)
+    plt.show()
