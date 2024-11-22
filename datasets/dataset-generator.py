@@ -3,6 +3,21 @@ import PIL
 import os, sys, time
 import pandas as pd
 import logging
+import pathlib
+from PIL import Image
+from pdf2image import convert_from_path
+import pymupdf
+import time
+from datetime import datetime
+import re
+import pandas as pd
+from PIL import Image
+import io
+import pickle
+
+
+root_dir = pathlib.Path().resolve().parent
+dpi_list = list(range(300, 49, -50)) + list(range(40,9, -10)) + [5,1]
 
 # Konfigurasi logging
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -10,79 +25,147 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.helper import calculate_cmyk_percentage, log
 
-
-
-def generate_dataset(output_path, **render_options):
-    pdf_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'statistik-indonesia-2024-combined.pdf',)
-    pdf = pdfium.PdfDocument(pdf_path)
-    
-    pdf_length = len(pdf)
-    logging.info(f"Pdf file loaded, it has {pdf_length} pages, starting the process")
-    
-    base_df = {
+class PDFConverter:
+    df_dict = {
+        'library': [],
+        'dpi': [],
         'converting_time': [],
         'page': [],
-        'dpi': [],
         'c': [],
         'm': [],
         'y': [],
         'k': [],
         'sum': [],
-        'base_minus_curr_sum': [],
-        'diff': [], # diff from the base dpi (300 dpi) in jpg format, no additional setting
     }
 
-    for dpi in list(range(300, 4, -10)) + [5]:
-        logging.info(f"start process for {dpi} dpi")
-        
-        for i in range(pdf_length):
-            start = time.time()
-            bitmap = pdf[i].render(
-                scale = 1/72 * dpi,
-                **render_options
-            )
-            pil_image = bitmap.to_pil()
-            converting_time = time.time() - start
-            c, m, y, k = calculate_cmyk_percentage(pil_image)
-            sum_of_cmyk = c + m + y + k
-            base_minus_curr_sum = 0
-            diff = 0
-            if dpi != 300:
-                base_minus_curr_sum = base_df['sum'][i] - sum_of_cmyk
-                diff = abs(base_df['sum'][i] - sum_of_cmyk)
-            
-            # Set 300 dpi as a base DataFrame
-            if dpi == 300:
-                base_df['converting_time'].append(converting_time)
-                base_df['page'].append(i+1)
-                base_df['dpi'].append(dpi)
-                base_df['c'].append(c)
-                base_df['m'].append(m)
-                base_df['y'].append(y)
-                base_df['k'].append(k)
-                base_df['sum'].append(sum_of_cmyk)
-                base_df['base_minus_curr_sum'].append(0)
-                base_df['diff'].append(0)
-            
-            if not os.path.exists(os.path.join('datasets', output_path)):
-                df = pd.DataFrame(base_df)
-                df.to_csv(os.path.join('datasets', output_path), index=False)
-                
-            else:
-                # Append out_path
-                log(os.path.join('datasets', output_path), f"{converting_time},{i+1},{dpi},{c},{m},{y},{k},{sum_of_cmyk},{base_minus_curr_sum},{diff}")
     
-            # Clean up memory
-            del start, bitmap, pil_image, c, m, y, k, sum_of_cmyk, base_minus_curr_sum
-            
-            # logging.info each multiply by 100
-            if i%100 == 0:
-                logging.info(f"converted {i+1} page")
-            
-        logging.info(f"finish process for {dpi} dpi")
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+
+    
+    def pdf2img_converter(self, dpi) -> pd.DataFrame:
+        self.reset_df_dict()
+        
+        pdf = convert_from_path(self.file_path, dpi=dpi, fmt='jpg')
+        
+        for index, page in enumerate(pdf):
+            start = time.time()
+            c, m, y, k = calculate_cmyk_percentage(page)
+            self.df_dict_appender(c, m, y, k, index, start, dpi)
+        
+        return pd.DataFrame(self.df_dict)
+
+
+    def pymupdf_converter(self, dpi) -> pd.DataFrame:
+        self.reset_df_dict()
+        pdf = pymupdf.open(self.file_path)
+       
+        
+        for index, page in enumerate(pdf):
+            start = time.time()
+            pixmap = page.get_pixmap(dpi=dpi)
+            img = Image.open(io.BytesIO(pixmap.tobytes()))
+    
+            c, m, y, k = calculate_cmyk_percentage(img)
+            self.df_dict_appender(c, m, y, k, index, start, dpi)
+    
+        return pd.DataFrame(self.df_dict)
+
+    def pdfium_converter(self, dpi) -> pd.DataFrame:
+        self.reset_df_dict()
+        start = time.time()
+        pdf = pdfium.PdfDocument(self.file_path)
+        
+        for index, page in enumerate(pdf):
+            start = time.time()
+            bitmap = pdf[index].render(
+                scale = 1/72 * dpi,
+            )
+            img = bitmap.to_pil()
+            c, m, y, k = calculate_cmyk_percentage(img)
+            self.df_dict_appender(c, m, y, k, index, start, dpi)
+    
+        return pd.DataFrame(self.df_dict)
+
+    def reset_df_dict(self):
+         self.df_dict = {
+            'library': [],
+             'dpi': [],
+            'converting_time': [],
+            'page': [],
+            'c': [],
+            'm': [],
+            'y': [],
+            'k': [],
+            'sum': [],
+         }
+
+    def df_dict_appender(self, c, m, y, k, index, start, dpi):
+        sum_ = c + m + y + k
+        self.df_dict['library'].append('pdfium')
+        self.df_dict['dpi'].append(dpi)
+        self.df_dict['page'].append(index+1)
+        self.df_dict['c'].append(c)
+        self.df_dict['m'].append(m)
+        self.df_dict['y'].append(y)
+        self.df_dict['k'].append(k)
+        self.df_dict['sum'].append(sum_)
+        self.df_dict['converting_time'].append(time.time() - start)
+
+
+
+def generate_dataset():
+    pdf_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'statistik-indonesia-2024-combined.pdf',)
+    conv = PDFConverter(pdf_path)
+    df_dict = {
+    'library': [],
+    'dpi': [],
+    'converting_time': [],
+    }
+    
+    df_full = None
+    
+    for dpi in dpi_list:
+        logging.info(f"Start converting {dpi} dpi")
+        start = time.time()
+        df_temp = conv.pdf2img_converter(dpi)
+        df_dict['library'].append('pdf2mg')
+        df_dict['dpi'].append(dpi)
+        df_dict['converting_time'].append(time.time() - start)
+    
+        if df_full == None:
+            df_full = df_temp
+        else:
+            df_full = pd.concat(df_full, df_temp, ignore_index=True)
+    
+        start = time.time()
+        df_temp = conv.pymupdf_converter(dpi)
+        df_dict['library'].append('pymupdf')
+        df_dict['dpi'].append(dpi)
+        df_dict['converting_time'].append(time.time() - start)
+        if df_full == None:
+            df_full = df_temp
+        else:
+            df_full = pd.concat(df_full, df_temp, ignore_index=True)
+    
+        start = time.time()
+        df_temp = conv.pdfium_converter(dpi)
+        df_dict['library'].append('pdfium')
+        df_dict['dpi'].append(dpi)
+        df_dict['converting_time'].append(time.time() - start)
+    
+        if df_full == None:
+            df_full = df_temp
+        else:
+            df_full = pd.concat(df_full, df_temp, ignore_index=True)
+
+        logging.info(f"Finish converting {dpi} dpi")
+
+    pickle.dump(df_full, open("df_full.pkl", 'wb'))
+        
+    df_full.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), index=False)
+    df_cvt.to_csv(root_dir.joinpath("outputs/csv/pdf_to_img_converting_time_by_libraries.csv"), index=False)
+    
 
 if __name__ == '__main__':
-    # Options: no_smoothtext (bool), no_smoothimage (bool)
-    generate_dataset("cmyk_by_dpi_and_render_options.csv", no_smoothtext=False, no_smoothimage=False)
-    generate_dataset("cmyk_by_dpi_and_render_options.csv", no_smoothtext=True, no_smoothimage=False)
-    generate_dataset("cmyk_by_dpi_and_render_options.csv", no_smoothtext=True, no_smoothimage=True)
+    generate_dataset()
