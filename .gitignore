@@ -1,5 +1,5 @@
 .DS_Store
-outputs
+outputs/pdfium_150dpi
 notebook/.ipynb_checkpoints
 */.ipynb_checkpoints
 */__pycache__
