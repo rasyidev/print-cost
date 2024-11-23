@@ -16,7 +16,8 @@ import io
 import pickle
 
 
-root_dir = os.path.join(os.path.dirname(__file__)
+root_dir = os.path.join(os.path.dirname(__file__), "../")
+
 dpi_list = list(range(10,0,-1)) + list(range(300, 49, -50)) + list(range(40,10, -10))
 
 # Konfigurasi logging
@@ -47,12 +48,12 @@ class PDFConverter:
         self.reset_df_dict()
         
         pdf = convert_from_path(self.file_path, dpi=dpi, fmt='jpg')
-        
+
         for index, page in enumerate(pdf):
             start = time.time()
             c, m, y, k = calculate_cmyk_percentage(page)
-            self.df_dict_appender(c, m, y, k, index, start, dpi)
-        
+            self.df_dict_appender(c, m, y, k, index, start, dpi, "pdf2image")
+
         return pd.DataFrame(self.df_dict)
 
 
@@ -67,7 +68,7 @@ class PDFConverter:
             img = Image.open(io.BytesIO(pixmap.tobytes()))
     
             c, m, y, k = calculate_cmyk_percentage(img)
-            self.df_dict_appender(c, m, y, k, index, start, dpi)
+            self.df_dict_appender(c, m, y, k, index, start, dpi, "pymupdf")
     
         return pd.DataFrame(self.df_dict)
 
@@ -83,7 +84,7 @@ class PDFConverter:
             )
             img = bitmap.to_pil()
             c, m, y, k = calculate_cmyk_percentage(img)
-            self.df_dict_appender(c, m, y, k, index, start, dpi)
+            self.df_dict_appender(c, m, y, k, index, start, dpi, "pdfium")
     
         return pd.DataFrame(self.df_dict)
 
@@ -100,7 +101,7 @@ class PDFConverter:
             'sum': [],
          }
 
-    def df_dict_appender(self, c, m, y, k, index, start, dpi):
+    def df_dict_appender(self, c, m, y, k, index, start, dpi, library):
         sum_ = c + m + y + k
         self.df_dict['library'].append('pdfium')
         self.df_dict['dpi'].append(dpi)
