@@ -116,6 +116,7 @@ class PDFConverter:
 
 def generate_dataset():
     pdf_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'statistik-indonesia-2024-combined.pdf',)
+    conv = PDFConverter(pdf_path)
     df_dict = {
         'library': [],
         'dpi': [],
