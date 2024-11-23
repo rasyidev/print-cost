@@ -116,56 +116,44 @@ class PDFConverter:
 
 def generate_dataset():
     pdf_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'statistik-indonesia-2024-combined.pdf',)
-    conv = PDFConverter(pdf_path)
     df_dict = {
-    'library': [],
-    'dpi': [],
-    'converting_time': [],
+        'library': [],
+        'dpi': [],
+        'converting_time': [],
     }
-    
-    df_full = None
-    
+
+
     for dpi in dpi_list:
-        logging.info(f"Start converting {dpi} dpi")
+        logging.info(f"Converting {dpi} dpi")
         start = time.time()
+
         df_temp = conv.pdf2img_converter(dpi)
         df_dict['library'].append('pdf2mg')
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
-    
-        if df_full == None:
-            df_full = df_temp
-        else:
-            df_full = pd.concat(df_full, df_temp, ignore_index=True)
-    
+
+        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
+
         start = time.time()
         df_temp = conv.pymupdf_converter(dpi)
         df_dict['library'].append('pymupdf')
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
-        if df_full == None:
-            df_full = df_temp
-        else:
-            df_full = pd.concat(df_full, df_temp, ignore_index=True)
-    
+
+        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
+
         start = time.time()
         df_temp = conv.pdfium_converter(dpi)
         df_dict['library'].append('pdfium')
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
-    
-        if df_full == None:
-            df_full = df_temp
-        else:
-            df_full = pd.concat(df_full, df_temp, ignore_index=True)
 
-        logging.info(f"Finish converting {dpi} dpi")
+        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
 
-    pickle.dump(df_full, open("df_full.pkl", 'wb'))
-        
-    df_full.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), index=False)
-    df_cvt.to_csv(root_dir.joinpath("outputs/csv/pdf_to_img_converting_time_by_libraries.csv"), index=False)
-    
+
+    df_cvt = pd.DataFrame(df_dict)
+    df_cvt.to_csv("../outputs/csv/pdf_to_img_converting_time_by_libraries.csv", index=False)
+
 
 if __name__ == '__main__':
     generate_dataset()
