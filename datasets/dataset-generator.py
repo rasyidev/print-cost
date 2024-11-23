@@ -133,7 +133,7 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
+        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
         start = time.time()
         df_temp = conv.pymupdf_converter(dpi)
@@ -141,7 +141,7 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
+        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
         start = time.time()
         df_temp = conv.pdfium_converter(dpi)
@@ -149,11 +149,11 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv("../outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv", mode='a', index=False, header=False)
+        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
 
     df_cvt = pd.DataFrame(df_dict)
-    df_cvt.to_csv("../outputs/csv/pdf_to_img_converting_time_by_libraries.csv", index=False)
+    df_cvt.to_csv(root_dir.joinpath("outputs/csv/pdf_to_img_converting_time_by_libraries.csv"), index=False)
 
 
 if __name__ == '__main__':
