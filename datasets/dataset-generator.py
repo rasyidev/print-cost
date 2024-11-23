@@ -16,7 +16,7 @@ import io
 import pickle
 
 
-root_dir = pathlib.Path().resolve().parent
+root_dir = os.path.join(os.path.dirname(__file__)
 dpi_list = list(range(10,0,-1)) + list(range(300, 49, -50)) + list(range(40,10, -10))
 
 # Konfigurasi logging
@@ -133,7 +133,7 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
+        df_temp.to_csv(os.path.join(root_dir, "outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
         start = time.time()
         df_temp = conv.pymupdf_converter(dpi)
@@ -141,7 +141,7 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
+        df_temp.to_csv(os.path.join(root_dir, "outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
         start = time.time()
         df_temp = conv.pdfium_converter(dpi)
@@ -149,7 +149,7 @@ def generate_dataset():
         df_dict['dpi'].append(dpi)
         df_dict['converting_time'].append(time.time() - start)
 
-        df_temp.to_csv(root_dir.joinpath("outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
+        df_temp.to_csv(os.path.join(root_dir, "outputs/csv/cmyk_of_a_pdf_file_by_dpi.csv"), mode='a', index=False, header=False)
 
 
     df_cvt = pd.DataFrame(df_dict)
