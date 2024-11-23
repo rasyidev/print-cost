@@ -17,7 +17,7 @@ import pickle
 
 
 root_dir = pathlib.Path().resolve().parent
-dpi_list = list(range(300, 49, -50)) + list(range(40,9, -10)) + [5,1]
+dpi_list = list(range(10,0,-1)) + list(range(300, 49, -50)) + list(range(40,10, -10))
 
 # Konfigurasi logging
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
