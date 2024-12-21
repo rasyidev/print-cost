@@ -1,0 +1,87 @@
+2024-11-26 20:43:49,814 - Converting 1 dpi
+2024-11-26 20:44:05,202 - Finish pdf2image 1 dpi
+2024-11-26 20:44:12,259 - Finish pymupdf 1 dpi
+2024-11-26 20:44:24,034 - Finish pdfium 1 dpi
+2024-11-26 20:44:24,043 - Converting 2 dpi
+2024-11-26 20:44:37,885 - Finish pdf2image 2 dpi
+2024-11-26 20:44:44,823 - Finish pymupdf 2 dpi
+2024-11-26 20:44:56,888 - Finish pdfium 2 dpi
+2024-11-26 20:44:56,896 - Converting 3 dpi
+2024-11-26 20:45:12,148 - Finish pdf2image 3 dpi
+2024-11-26 20:45:19,653 - Finish pymupdf 3 dpi
+2024-11-26 20:45:34,005 - Finish pdfium 3 dpi
+2024-11-26 20:45:34,014 - Converting 4 dpi
+2024-11-26 20:45:48,886 - Finish pdf2image 4 dpi
+2024-11-26 20:45:56,267 - Finish pymupdf 4 dpi
+2024-11-26 20:46:11,611 - Finish pdfium 4 dpi
+2024-11-26 20:46:11,621 - Converting 5 dpi
+2024-11-26 20:46:25,708 - Finish pdf2image 5 dpi
+2024-11-26 20:46:33,237 - Finish pymupdf 5 dpi
+2024-11-26 20:46:45,230 - Finish pdfium 5 dpi
+2024-11-26 20:46:45,240 - Converting 6 dpi
+2024-11-26 20:46:59,726 - Finish pdf2image 6 dpi
+2024-11-26 20:47:07,232 - Finish pymupdf 6 dpi
+2024-11-26 20:47:19,531 - Finish pdfium 6 dpi
+2024-11-26 20:47:19,539 - Converting 7 dpi
+2024-11-26 20:47:34,014 - Finish pdf2image 7 dpi
+2024-11-26 20:47:41,680 - Finish pymupdf 7 dpi
+2024-11-26 20:47:57,018 - Finish pdfium 7 dpi
+2024-11-26 20:47:57,028 - Converting 8 dpi
+2024-11-26 20:48:12,647 - Finish pdf2image 8 dpi
+2024-11-26 20:48:20,809 - Finish pymupdf 8 dpi
+2024-11-26 20:48:34,067 - Finish pdfium 8 dpi
+2024-11-26 20:48:34,080 - Converting 9 dpi
+2024-11-26 20:48:52,309 - Finish pdf2image 9 dpi
+2024-11-26 20:49:01,327 - Finish pymupdf 9 dpi
+2024-11-26 20:49:15,448 - Finish pdfium 9 dpi
+2024-11-26 20:49:15,458 - Converting 10 dpi
+2024-11-26 20:49:31,440 - Finish pdf2image 10 dpi
+2024-11-26 20:49:40,961 - Finish pymupdf 10 dpi
+2024-11-26 20:49:55,492 - Finish pdfium 10 dpi
+2024-11-26 20:49:55,503 - Converting 10 dpi
+2024-11-26 20:50:12,384 - Finish pdf2image 10 dpi
+2024-11-26 20:50:21,523 - Finish pymupdf 10 dpi
+2024-11-26 20:50:35,850 - Finish pdfium 10 dpi
+2024-11-26 20:50:35,861 - Converting 20 dpi
+2024-11-26 20:50:55,965 - Finish pdf2image 20 dpi
+2024-11-26 20:51:06,962 - Finish pymupdf 20 dpi
+2024-11-26 20:51:21,800 - Finish pdfium 20 dpi
+2024-11-26 20:51:21,810 - Converting 30 dpi
+2024-11-26 20:51:44,561 - Finish pdf2image 30 dpi
+2024-11-26 20:51:58,047 - Finish pymupdf 30 dpi
+2024-11-26 20:52:15,578 - Finish pdfium 30 dpi
+2024-11-26 20:52:15,588 - Converting 40 dpi
+2024-11-26 20:52:43,154 - Finish pdf2image 40 dpi
+2024-11-26 20:53:01,125 - Finish pymupdf 40 dpi
+2024-11-26 20:53:20,379 - Finish pdfium 40 dpi
+2024-11-26 20:53:20,388 - Converting 50 dpi
+2024-11-26 20:53:57,392 - Finish pdf2image 50 dpi
+2024-11-26 20:54:24,816 - Finish pymupdf 50 dpi
+2024-11-26 20:54:50,208 - Finish pdfium 50 dpi
+2024-11-26 20:54:50,217 - Converting 100 dpi
+2024-11-26 20:57:03,169 - Finish pdf2image 100 dpi
+2024-11-26 20:58:53,299 - Finish pymupdf 100 dpi
+2024-11-26 21:00:27,639 - Finish pdfium 100 dpi
+2024-11-26 21:00:27,649 - Converting 150 dpi
+2024-11-26 21:05:10,692 - Finish pdf2image 150 dpi
+2024-11-26 21:09:06,348 - Finish pymupdf 150 dpi
+2024-11-26 21:12:23,873 - Finish pdfium 150 dpi
+2024-11-26 21:12:23,885 - Converting 200 dpi
+2024-11-26 21:20:45,858 - Finish pdf2image 200 dpi
+2024-11-26 21:28:00,936 - Finish pymupdf 200 dpi
+2024-11-26 21:33:52,822 - Finish pdfium 200 dpi
+2024-11-26 21:33:52,833 - Converting 250 dpi
+2024-11-26 21:45:51,237 - Finish pdf2image 250 dpi
+2024-11-26 21:56:30,941 - Finish pymupdf 250 dpi
+2024-11-26 23:41:45,370 - Finish pdfium 250 dpi
+2024-11-26 23:41:45,409 - Converting 300 dpi
+2024-11-27 05:18:40,674 - Finish pdf2image 300 dpi
+2024-11-27 05:33:52,588 - Finish pymupdf 300 dpi
+2024-11-27 05:47:05,923 - Finish pdfium 300 dpi
+Traceback (most recent call last):
+  File "/Users/rasyidev/Documents/rasyidevcode/print-cost/datasets/dataset-generator.py", line 164, in <module>
+    generate_dataset()
+  File "/Users/rasyidev/Documents/rasyidevcode/print-cost/datasets/dataset-generator.py", line 160, in generate_dataset
+    df_cvt.to_csv(root_dir.joinpath("outputs/csv/pdf_to_img_converting_time_by_libraries.csv"), index=False)
+                  ^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'joinpath'
