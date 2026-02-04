@@ -23,6 +23,9 @@ notebook
 # Outputs & generated files
 ############################
 outputs
+dataset-generator-log.txt
+process.txt
+
 
 ############################
 # Datasets (partial, selective)
