@@ -16,22 +16,18 @@ __pycache__/
 ############################
 # Jupyter
 ############################
-notebook/.ipynb_checkpoints/
-.ipynb_checkpoints/
-*/.ipynb_checkpoints/
-*/*/.ipynb_checkpoints/
-*/*/*/.ipynb_checkpoints/
+notebook
+
 
 ############################
 # Outputs & generated files
 ############################
-outputs/
-outputs/pdfium_150dpi/
+outputs
 
 ############################
 # Datasets (partial, selective)
 ############################
-datasets/converted_images/
+datasets
 
 ############################
 # Documents & media (non-essential)
