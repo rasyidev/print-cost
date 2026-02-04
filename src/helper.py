@@ -406,16 +406,28 @@ class PrintCost:
         return response
 
     def _generate_response(self, start_time):
-        value_counts = self.df.price.value_counts()
-        sub_total = value_counts.index.values * value_counts.values
+        result_df = (
+            self.df.price.value_counts()
+            .reset_index()
+            .sort_values("price")
+            .rename(columns={"count": "pages"})
+        )
+        result_df["subtotal"] = result_df["price"] * result_df["pages"]
+
+        price_category_map = {
+            500: "Mono Print",
+            750: "Color Light",
+            1000: "Color Standard",
+            1500: "Color Heavy",
+            2000: "Full Color – Dark & Mixed",
+        }
+
+        result_df["category"] = result_df["price"].map(price_category_map)
 
         result_dict = {
-            f"{price}": {"count": count, "sub_total": price * count}
-            for price, count in zip(value_counts.index.tolist(), value_counts.values.tolist())
+            "total_pages": int(result_df["pages"].sum()),
+            "total_price": int(result_df["subtotal"].sum()),
+            "details": result_df.to_dict(orient="records"),
         }
-        
-        # Tambahkan total dan elapsed_time
-        result_dict["total"] = int(sub_total.sum())
-        result_dict["elapsed_time"] = time.time() - start_time
-
-        return {"details": result_dict}
+        # print("LOG: ", result_dict.type)
+        return result_dict
