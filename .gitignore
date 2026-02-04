@@ -1,12 +1,46 @@
+############################
+# OS & ENV
+############################
 .DS_Store
-outputs/pdfium_150dpi
-notebook/.ipynb_checkpoints
-*/.ipynb_checkpoints
-__pycache__
-*/__pycache__
-*/*/.ipynb_checkpoints
-*/*/__pycache__
-*/*/*/.ipynb_checkpoints
-*/*/*/__pycache__
-datasets/converted_images
 .env
+
+############################
+# Python cache
+############################
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.pyc
+
+############################
+# Jupyter
+############################
+notebook/.ipynb_checkpoints/
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*/*/.ipynb_checkpoints/
+*/*/*/.ipynb_checkpoints/
+
+############################
+# Outputs & generated files
+############################
+outputs/
+outputs/pdfium_150dpi/
+
+############################
+# Datasets (partial, selective)
+############################
+datasets/converted_images/
+
+############################
+# Documents & media (non-essential)
+############################
+*.pdf
+*.docx
+
+############################
+# IDE
+############################
+.vscode/
+*.code-workspace
