@@ -3,14 +3,14 @@ FROM python:3.11-slim
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-WORKDIR /app
+WORKDIR /src
 
 # Copy the application into the container
-COPY src/ /app
-COPY pyproject.toml /app
-COPY uv.lock /app
-COPY main.py /app
-COPY models /app/models
+COPY src/ /src
+COPY pyproject.toml /src
+COPY uv.lock /src
+COPY main.py /src
+COPY models /src/models
 
 # Install the application dependencies
 RUN uv sync --frozen --no-cache
