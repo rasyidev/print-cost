@@ -5,6 +5,24 @@ import altair as alt
 import pandas as pd
 import tempfile
 
+with st.sidebar:
+    st.markdown(
+        """
+        ## 🖨️ Print-Cost
+
+        **ML-powered document pricing system**  
+        built from real-world business experience.
+
+        - 🚀 109× faster than manual pricing  
+        - 🎯 99% F1 Score  
+        - 📊 Transparent & interactive cost breakdown
+
+        🔗 [Read the full story](https://rasyidev.pages.dev/projects/print-cost)  
+        💻 [View source code](https://github.com/USERNAME/print-cost)
+        """
+    )
+
+
 st.set_page_config(
     page_title="Print Cost Predictor",
     page_icon="🖨️",
@@ -13,7 +31,9 @@ st.set_page_config(
 )
 
 st.title("Print Cost", text_alignment="center")
-st.info("Print-Cost is an automated solution for calculating document printing prices using Machine Learning")
+st.info(
+    "Print-Cost is an automated solution for calculating document printing prices using Machine Learning"
+)
 
 uploaded_file = st.file_uploader(
     "Upload your PDF file here",
