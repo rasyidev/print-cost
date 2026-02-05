@@ -5,6 +5,13 @@ import altair as alt
 import pandas as pd
 import tempfile
 
+st.set_page_config(
+    page_title="Print Cost Calculator",
+    page_icon="🖨️",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
+
 with st.sidebar:
     st.markdown(
         """
@@ -23,17 +30,7 @@ with st.sidebar:
     )
 
 
-st.set_page_config(
-    page_title="Print Cost Predictor",
-    page_icon="🖨️",
-    layout="centered",
-    initial_sidebar_state="collapsed",
-)
-
 st.title("Print Cost", text_alignment="center")
-st.info(
-    "Print-Cost is an automated solution for calculating document printing prices using Machine Learning"
-)
 
 uploaded_file = st.file_uploader(
     "Upload your PDF file here",
@@ -42,31 +39,34 @@ uploaded_file = st.file_uploader(
 )
 
 
-if st.button("Proceed"):
+if st.button("Calculate Print Cost"):
     if uploaded_file is None:
         st.warning("Please upload the file")
 
     else:
         try:
-            # Save uploaded file temporarily
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-                tmp_file.write(uploaded_file.read())
-                tmp_file_path = tmp_file.name
+            with st.spinner("Processing your PDF and calculating print cost... ⏳"):
+                # Save uploaded file temporarily
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".pdf"
+                ) as tmp_file:
+                    tmp_file.write(uploaded_file.read())
+                    tmp_file_path = tmp_file.name
 
-            # Open PDF and run prediction
-            pdf = pymupdf.open(tmp_file_path)
+                # Open PDF and run prediction
+                pdf = pymupdf.open(tmp_file_path)
 
-            pc = PrintCost(pdf, "models/xgboost_98.64_cmy_k_cmyk_7_dpi.pkl")
-            result = pc.predict(dpi=7)
+                pc = PrintCost(pdf, "models/xgboost_98.64_cmy_k_cmyk_7_dpi.pkl")
+                result = pc.predict(dpi=7)
+
+            st.success("✅ Calculation complete!")
 
             st.divider()
 
             st.subheader("Result")
             col1, col2 = st.columns(2)
             col1.metric("Total Pages", result["total_pages"])
-            col2.metric(
-                "Total Price", f"IDR {result['total_price']}", format="accounting"
-            )
+            col2.metric("Total Price", f"IDR {result['total_price']:,.0f}")
 
             st.subheader("Pages by Category")
             df = pd.DataFrame(result["details"])
@@ -104,5 +104,6 @@ if st.button("Proceed"):
             )
 
             st.altair_chart(chart, width="stretch")
+
         except Exception as e:
             st.error(f"Error processing file: {e}")
