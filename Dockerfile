@@ -18,4 +18,4 @@ RUN uv sync --frozen --no-cache
 EXPOSE 8501
 
 # Run the application
-ENTRYPOINT [".venv/bin/streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT [".venv/bin/streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableXsrfProtection=false"]
