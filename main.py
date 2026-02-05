@@ -14,7 +14,6 @@ uploaded_file = st.file_uploader(
     accept_multiple_files=False,
 )
 
-st.write("XSRF:", st.get_option("server.enableXsrfProtection"))
 
 if st.button("Proceed"):
     if uploaded_file is None:
