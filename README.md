@@ -1,11 +1,10 @@
 ---
-title: Prediksi Karyawan Resign
+title: Print Cost
 emoji: 🖨
 colorFrom: blue
 colorTo: purple
 sdk: docker
-sdk_version: 24.0.2
-app_file: main.py
+app_port: 8501
 pinned: false
 short_description: A simple tool calculate printing costs
 ---
