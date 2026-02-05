@@ -13,7 +13,8 @@ st.set_page_config(
 )
 
 st.title("Print Cost", text_alignment="center")
-st.text("A simple app to calculate or predict printing prices", text_alignment="center")
+st.info("Print-Cost is an automated solution for calculating document printing prices using Machine Learning", 
+text_alignment="center")
 
 uploaded_file = st.file_uploader(
     "Upload your PDF file here",
