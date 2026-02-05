@@ -18,7 +18,7 @@ with st.sidebar:
         - 📊 Transparent & interactive cost breakdown
 
         🔗 [Read the full story](https://rasyidev.pages.dev/projects/print-cost)  
-        💻 [View source code](https://github.com/USERNAME/print-cost)
+        💻 [View source code](https://github.com/rasyidev/print-cost)
         """
     )
 
