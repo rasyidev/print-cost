@@ -5,6 +5,13 @@ import altair as alt
 import pandas as pd
 import tempfile
 
+st.set_page_config(
+    page_title="Print Cost Predictor",
+    page_icon="🖨️",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
+
 st.title("Print Cost", text_alignment="center")
 st.text("A simple app to calculate or predict printing prices", text_alignment="center")
 
