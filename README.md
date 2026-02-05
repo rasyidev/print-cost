@@ -1,10 +1,10 @@
 ---
 title: Prediksi Karyawan Resign
-emoji: 🏃
+emoji: 🖨
 colorFrom: blue
 colorTo: purple
-sdk: streamlit
-sdk_version: 1.53.1
+sdk: docker
+sdk_version: 24.0.2
 app_file: main.py
 pinned: false
 short_description: A simple tool calculate printing costs
