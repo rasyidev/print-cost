@@ -32,6 +32,11 @@ with st.sidebar:
 
 st.title("Print Cost", text_alignment="center")
 
+st.write(
+    "Print-Cost helps you instantly calculate accurate document printing costs "
+    "with no guesswork and no manual calculations powered by Machine Learning."
+)
+
 uploaded_file = st.file_uploader(
     "Upload your PDF file here",
     type=["pdf"],
