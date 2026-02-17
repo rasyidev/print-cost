@@ -1,18 +1,21 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+WORKDIR /app
 
 # Copy the application into the container
-COPY src/ /app
+COPY src/ /app/src
 COPY pyproject.toml /app
 COPY uv.lock /app
 COPY main.py /app
 COPY models /app/models
 
-# Install the application dependencies
-WORKDIR /app
+# Ensure Python can find packages
+ENV PYTHONPATH=/app
+
+# Install dependencies
 RUN uv sync --frozen --no-cache
 
+EXPOSE 8501
+
 # Run the application
-CMD ["/app/.venv/bin/streamlit", "run", "main.py", "--port", "80", "--host", "0.0.0.0"]
+ENTRYPOINT [".venv/bin/streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableXsrfProtection=false"]
