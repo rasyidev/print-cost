@@ -13,9 +13,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, List
 import logging
 from contextlib import asynccontextmanager
-import pymupdf
-
-from src.services.cost_calculator import CostCalculator
+from src.services.cost_calculator import CostCalculator, calculate_cost_from_bytes
 from src.services.model_manager import ModelManager
 from src.exceptions import (
     InvalidPDFError,
@@ -239,10 +237,12 @@ async def calculate_print_cost(
     Calculate printing cost for a PDF document.
     
     **Process**:
-    1. Validates PDF file format and size
-    2. Extracts CMYK color features from each page
-    3. Predicts print category using ML model (99% F1 score)
-    4. Calculates cost breakdown
+    1. Validates the upload is a `.pdf` and within the size limit
+    2. Hands the raw bytes to `calculate_cost_from_bytes`, the same service
+       entry point used by in-process callers (agent tools)
+    3. Extracts CMYK color features from each page
+    4. Predicts print category using ML model (99% F1 score)
+    5. Calculates cost breakdown
     
     **Returns**:
     - Total pages and price
@@ -254,7 +254,7 @@ async def calculate_print_cost(
     - 413: File too large (>50MB)
     - 500: Prediction failed
     """
-    # Validate file type
+    # Validate file type (transport-level check; the service re-checks the bytes)
     if not file.filename.endswith('.pdf'):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -265,26 +265,15 @@ async def calculate_print_cost(
     pdf_bytes = await file.read()
     file_size_mb = len(pdf_bytes) / (1024 * 1024)
     
-    if file_size_mb > MAX_FILE_SIZE_MB:
-        raise FileSizeError(file_size_mb, MAX_FILE_SIZE_MB)
-    
     logger.info(f"Processing PDF: {file.filename} ({file_size_mb:.2f} MB)")
     
     try:
-        # Open PDF document
-        pdf = pymupdf.open(stream=pdf_bytes, filetype="pdf")
-        
-        # Validate page count
-        page_count = len(pdf)
-        if not (MIN_PAGES <= page_count <= MAX_PAGES):
-            pdf.close()
-            raise PageCountError(page_count, MIN_PAGES, MAX_PAGES)
-        
-        # Calculate cost
-        calc = get_calculator()
-        result = calc.calculate_cost(pdf, dpi=dpi)
-        
-        pdf.close()
+        # Shared validation + pricing path: file size, %PDF header, page count
+        result = calculate_cost_from_bytes(
+            pdf_bytes,
+            dpi=dpi,
+            calculator=get_calculator(),
+        )
         
         logger.info(
             f"Successfully processed {result['total_pages']} pages "

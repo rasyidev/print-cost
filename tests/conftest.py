@@ -12,6 +12,13 @@ import io
 import pymupdf
 from pathlib import Path
 
+from src.config import PRICE_CATEGORY_MAP, PRICE_LABEL_MAP
+
+try:  # imported as part of the `tests` package (tests/__init__.py exists)
+    from .fakes import MockModel, MockModelVaried
+except ImportError:  # pragma: no cover - only when run as a bare script
+    from fakes import MockModel, MockModelVaried
+
 
 @pytest.fixture
 def sample_rgb_image():
@@ -62,36 +69,13 @@ def sample_cmyk_data():
 
 @pytest.fixture
 def mock_model():
-    """Create a mock ML model for testing."""
-    class MockModel:
-        def predict(self, X):
-            """Mock prediction that returns label 0 for all inputs."""
-            return np.zeros(len(X), dtype=int)
-    
+    """Create a mock ML model for testing (module-level class, so picklable)."""
     return MockModel()
 
 
 @pytest.fixture
 def mock_model_varied():
-    """Create a mock ML model with varied predictions."""
-    class MockModelVaried:
-        def predict(self, X):
-            """Mock prediction with varied labels based on input."""
-            predictions = []
-            for _, row in X.iterrows():
-                cmyk_sum = row.get('cmyk', row.sum())
-                if cmyk_sum < 50:
-                    predictions.append(0)  # Mono
-                elif cmyk_sum < 150:
-                    predictions.append(1)  # Color Light
-                elif cmyk_sum < 250:
-                    predictions.append(2)  # Color Standard
-                elif cmyk_sum < 300:
-                    predictions.append(3)  # Color Heavy
-                else:
-                    predictions.append(4)  # Full Color
-            return np.array(predictions)
-    
+    """Create a mock ML model with varied predictions (picklable)."""
     return MockModelVaried()
 
 
@@ -149,24 +133,31 @@ def sample_pdf_file(tmp_path, sample_pdf_bytes):
 
 @pytest.fixture
 def expected_price_categories():
-    """Provide expected price categories for assertion."""
-    return {
-        500: "Mono Print",
-        750: "Color Light",
-        1000: "Color Standard",
-        1500: "Color Heavy",
-        2000: "Full Color – Dark & Mixed",
-    }
+    """Expected price -> category mapping, taken from the canonical table."""
+    return dict(PRICE_CATEGORY_MAP)
 
 
 @pytest.fixture
 def sample_result_dict():
-    """Provide a sample result dictionary structure."""
+    """Sample result structure, derived from the canonical price table."""
+    mono_price = PRICE_LABEL_MAP[0]
+    standard_price = PRICE_LABEL_MAP[2]
+    pages_each = 5
     return {
-        "total_pages": 10,
-        "total_price": 7500,
+        "total_pages": pages_each * 2,
+        "total_price": (mono_price + standard_price) * pages_each,
         "details": [
-            {"price": 500, "pages": 5, "subtotal": 2500, "category": "Mono Print"},
-            {"price": 1000, "pages": 5, "subtotal": 5000, "category": "Color Standard"},
+            {
+                "price": mono_price,
+                "pages": pages_each,
+                "subtotal": mono_price * pages_each,
+                "category": PRICE_CATEGORY_MAP[mono_price],
+            },
+            {
+                "price": standard_price,
+                "pages": pages_each,
+                "subtotal": standard_price * pages_each,
+                "category": PRICE_CATEGORY_MAP[standard_price],
+            },
         ],
     }

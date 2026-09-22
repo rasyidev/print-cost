@@ -1,14 +1,13 @@
 import os, sys
 import joblib
-import json
 import pandas as pd
 
 sys.path.append(os.path.abspath(".."))
-from src.helper import calculate_cmyk_percentage, ROOT_DIR
+from src.config import PRICE_LABEL_MAP, ROOT_DIR
+from src.services.image_processor import ImageProcessor
 import pypdfium2 as pdfium
 
 model, scaler = joblib.load(open(os.path.join(ROOT_DIR, 'models', 'kmeans_and_scaler.pkl'), 'rb'))
-labels = json.load(open(os.path.join(ROOT_DIR, 'models', 'price_label.json')))
 
 def render_and_predict(page, dpi:int) -> float:
   """Render a single page pillow image"""
@@ -17,10 +16,14 @@ def render_and_predict(page, dpi:int) -> float:
             rotation = 0, 
         )
   pil_image = bitmap.to_pil()
-  cmyk_sum = sum(calculate_cmyk_percentage(pil_image))
+  cmyk_sum = sum(ImageProcessor.calculate_cmyk_percentage(pil_image))
   
   index_label = model.predict(scaler.transform([[cmyk_sum]]))[0]
-  return labels['prices'][index_label]
+  # Canonical 5-class table (src/config.py). The retired 6-entry
+  # models/price_label.json was removed in favour of this single source; the
+  # legacy 6-cluster kmeans artifact this script loads may therefore return a
+  # label outside 0..4, which raises KeyError instead of silently pricing it.
+  return PRICE_LABEL_MAP[int(index_label)]
 
 df_json = {
   "filename": [],

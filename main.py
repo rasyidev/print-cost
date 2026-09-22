@@ -1,6 +1,7 @@
 import streamlit as st
 import pymupdf
 from src.helper import PrintCost
+from src.config import CATEGORY_COLOR_MAP
 import altair as alt
 import pandas as pd
 import tempfile
@@ -76,14 +77,6 @@ if st.button("Calculate Print Cost"):
             st.subheader("Pages by Category")
             df = pd.DataFrame(result["details"])
 
-            color_map = {
-                "Mono Print": "#FFF2EF",
-                "Color Light": "#FFDBB6",
-                "Color Standard": "#F7A5A5",
-                "Color Heavy": "#5D688A",
-                "Full Color – Dark & Mixed": "#88527F",
-            }
-
             chart = (
                 alt.Chart(df)
                 .mark_arc()
@@ -95,8 +88,8 @@ if st.button("Calculate Print Cost"):
                         field="category",
                         type="nominal",
                         scale=alt.Scale(
-                            domain=list(color_map.keys()),
-                            range=list(color_map.values()),
+                            domain=list(CATEGORY_COLOR_MAP.keys()),
+                            range=list(CATEGORY_COLOR_MAP.values()),
                         ),
                         legend=alt.Legend(title="Print Category"),
                     ),

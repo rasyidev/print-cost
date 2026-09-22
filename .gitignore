@@ -17,6 +17,7 @@ __pycache__/
 # Jupyter
 ############################
 notebook
+.ipynb_checkpoints/
 
 
 ############################
@@ -37,6 +38,14 @@ datasets
 ############################
 *.pdf
 *.docx
+
+############################
+# Test & coverage artifacts
+############################
+.venv/
+.coverage
+htmlcov/
+.pytest_cache/
 
 ############################
 # IDE
