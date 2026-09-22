@@ -39,6 +39,14 @@ datasets
 *.docx
 
 ############################
+# Test & coverage artifacts
+############################
+.venv/
+.coverage
+htmlcov/
+.pytest_cache/
+
+############################
 # IDE
 ############################
 .vscode/
