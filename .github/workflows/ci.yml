@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests + coverage gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # requirements.txt is the uv-compiled lock of pyproject.toml and pins the
+      # versions the pickled model needs (numpy 1.24.3, scikit-learn 1.3.0,
+      # xgboost 2.1.2, pymupdf 1.24.12). Do not bump those: the artifact
+      # unpickles only against them.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-mock httpx
+
+      # The model is a Git-LFS pointer in a plain checkout. Pull just the one
+      # artifact (~400 KB) instead of the whole LFS store, so the pin below is
+      # checked against the real classifier on every run.
+      - name: Fetch the pinned model artifact
+        run: |
+          git lfs install --local
+          git lfs pull --include="models/xgboost_98.64_cmy_k_cmyk_7_dpi.pkl"
+
+      - name: Verify the model artifact matches the pin
+        run: python scripts/fetch_model.py --check
+
+      - name: Run the test suite
+        run: pytest
+        # pytest.ini carries --cov=src --cov-fail-under=70, so this step is the
+        # coverage gate as well as the test run.
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov/
+          retention-days: 7
+
+  # Informational only: the live Space still runs the pre-refactor Streamlit app
+  # (plan F6 — repo/Space drift), so this check is expected to fail until the
+  # Space is redeployed against this repo. It is deliberately non-blocking so a
+  # known drift does not mask real test failures.
+  space-smoke:
+    name: Live Space smoke check (informational, F6)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check /health and /openapi.json
+        run: |
+          set -u
+          base="https://rasyidev-print-cost.hf.space"
+          status=0
+
+          for path in /health /openapi.json; do
+            body="$(curl -sS --max-time 60 "$base$path" || true)"
+            if echo "$body" | head -c 200 | grep -q "<!DOCTYPE html"; then
+              echo "::warning::$path returned HTML (Streamlit), not JSON - the Space is still running the pre-refactor app"
+              status=1
+            else
+              echo "$path: $(echo "$body" | head -c 200)"
+            fi
+          done
+
+          if [ "$status" -ne 0 ]; then
+            echo "The deployed Space does not match this repository yet (plan F6)."
+          fi
+          exit "$status"
+
+  # Manual only, and only from main: nothing deploys without a human decision.
+  # Needs the repository secret HF_TOKEN (write access to the Space).
+  deploy-space:
+    name: Deploy main to the Hugging Face Space
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the HF_TOKEN secret is configured
+        run: |
+          if [ -z "${{ secrets.HF_TOKEN }}" ]; then
+            echo "::error::HF_TOKEN is not set. Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+      - name: Verify the model artifact matches the pin
+        run: python scripts/fetch_model.py --check
+
+      - name: Push this commit to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: bash scripts/deploy_space.sh --apply --ci
