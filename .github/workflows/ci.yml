@@ -68,19 +68,22 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Check /health and /openapi.json
+      - name: Check /health and /openapi.json return JSON
         run: |
           set -u
           base="https://rasyidev-print-cost.hf.space"
           status=0
 
           for path in /health /openapi.json; do
-            body="$(curl -sS --max-time 60 "$base$path" || true)"
-            if echo "$body" | head -c 200 | grep -q "<!DOCTYPE html"; then
-              echo "::warning::$path returned HTML (Streamlit), not JSON - the Space is still running the pre-refactor app"
-              status=1
+            body="$(mktemp)"
+            ctype="$(curl -sS --max-time 60 -o "$body" -w '%{content_type}' "$base$path" || echo 'request failed')"
+
+            if python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$body" 2>/dev/null; then
+              echo "$path: JSON, content-type=$ctype"
+              head -c 200 "$body"; echo
             else
-              echo "$path: $(echo "$body" | head -c 200)"
+              echo "::warning::$path did not return JSON (content-type=$ctype) - the Space is still serving the pre-refactor Streamlit app (plan F6)"
+              status=1
             fi
           done
 
