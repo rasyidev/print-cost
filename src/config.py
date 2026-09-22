@@ -16,7 +16,21 @@ ROOT_DIR = Path(__file__).parent.parent
 MODEL_DIR = ROOT_DIR / "models"
 DEFAULT_MODEL_FILE = "xgboost_98.64_cmy_k_cmyk_7_dpi.pkl"
 DEFAULT_MODEL_PATH = MODEL_DIR / DEFAULT_MODEL_FILE
-PRICE_LABEL_FILE = MODEL_DIR / "price_label.json"
+
+# Pinned model artifact (F5).
+#
+# The model is stored in Git LFS, so a clone without `git lfs pull` holds a
+# ~130 byte pointer instead of the real classifier. These constants are the pin:
+# `scripts/fetch_model.py` downloads the artifact and refuses to write anything
+# whose size or SHA-256 does not match, and `ModelManager` verifies the local
+# file before loading it. Both checks fail loudly rather than predicting with a
+# pointer.
+DEFAULT_MODEL_SHA256 = "523ff4dd301ac10855d64eb4a680e7ec0cd8985740ebd5679a9ed70f2a873c46"
+DEFAULT_MODEL_SIZE_BYTES = 409239
+DEFAULT_MODEL_URL = (
+    "https://huggingface.co/spaces/rasyidev/print-cost/resolve/main/models/"
+    + DEFAULT_MODEL_FILE
+)
 
 # Model metadata
 MODEL_FEATURES = ["cmy", "k", "cmyk"]
@@ -28,31 +42,38 @@ DEFAULT_DPI = 7  # DPI for PDF rendering
 SUPPORTED_FILE_EXTENSIONS = ["pdf"]
 MAX_FILE_SIZE_MB = 50  # Maximum file size in MB
 
-# Price mappings
-PRICE_LABEL_MAP: Dict[int, int] = {
-    0: 500,   # Mono Print
-    1: 750,   # Color Light
-    2: 1000,  # Color Standard
-    3: 1500,  # Color Heavy
-    4: 2000,  # Full Color – Dark & Mixed
-}
+# ---------------------------------------------------------------------------
+# THE price table (single source of truth)
+# ---------------------------------------------------------------------------
+# One literal definition, everything else derived from it. Label indices are the
+# five classes the XGBoost classifier emits (`classes_ == [0, 1, 2, 3, 4]`), in
+# ascending price order. `tests/unit/test_price_table.py` asserts both facts and
+# that no other file in the repo re-declares these prices.
+#
+# Format: (label index, price per A4 page in IDR, category name, chart colour)
+PRICE_TABLE: tuple[tuple[int, int, str, str], ...] = (
+    (0, 500, "Mono Print", "#FFF2EF"),
+    (1, 750, "Color Light", "#FFDBB6"),
+    (2, 1000, "Color Standard", "#F7A5A5"),
+    (3, 1500, "Color Heavy", "#5D688A"),
+    (4, 2000, "Full Color – Dark & Mixed", "#88527F"),
+)
 
+#: Model label index -> price per page in IDR.
+PRICE_LABEL_MAP: Dict[int, int] = {label: price for label, price, _, _ in PRICE_TABLE}
+
+#: Price per page in IDR -> human-readable category name.
 PRICE_CATEGORY_MAP: Dict[int, str] = {
-    500: "Mono Print",
-    750: "Color Light",
-    1000: "Color Standard",
-    1500: "Color Heavy",
-    2000: "Full Color – Dark & Mixed",
+    price: category for _, price, category, _ in PRICE_TABLE
 }
 
-# Color mappings for visualization
+#: Category name -> chart colour, for the Streamlit UI.
 CATEGORY_COLOR_MAP: Dict[str, str] = {
-    "Mono Print": "#FFF2EF",
-    "Color Light": "#FFDBB6",
-    "Color Standard": "#F7A5A5",
-    "Color Heavy": "#5D688A",
-    "Full Color – Dark & Mixed": "#88527F",
+    category: color for _, _, category, color in PRICE_TABLE
 }
+
+#: Number of colour-intensity classes the model predicts.
+NUM_PRICE_CLASSES = len(PRICE_TABLE)
 
 # Validation thresholds
 MIN_PAGES = 1
