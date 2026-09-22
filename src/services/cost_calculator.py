@@ -15,11 +15,17 @@ import io
 
 from .image_processor import ImageProcessor
 from .model_manager import ModelManager
-from ..exceptions import InvalidPDFError, PredictionError, PageCountError
+from ..exceptions import (
+    FileSizeError,
+    InvalidPDFError,
+    PredictionError,
+    PageCountError,
+)
 from ..config import (
     PRICE_LABEL_MAP,
     PRICE_CATEGORY_MAP,
     DEFAULT_DPI,
+    MAX_FILE_SIZE_MB,
     MODEL_FEATURES,
     MIN_PAGES,
     MAX_PAGES,
@@ -225,3 +231,68 @@ class CostCalculator:
             "details": result_df.to_dict(orient="records"),
             "processing_time": round(processing_time, 2),
         }
+
+
+def calculate_cost_from_bytes(
+    pdf_bytes: bytes | bytearray | memoryview,
+    dpi: int = DEFAULT_DPI,
+    calculator: CostCalculator | None = None,
+) -> Dict[str, Any]:
+    """
+    Price a PDF supplied as raw bytes.
+
+    This is the single validation + pricing path shared by the HTTP API
+    (`main-fastapi.py`) and any in-process caller — in particular the Dokuprint
+    agent's `calculate_print_cost` tool, which receives uploaded bytes rather
+    than a path.
+
+    Validation order: payload is bytes, payload is within ``MAX_FILE_SIZE_MB``,
+    payload starts with a PDF header, page count is within
+    ``MIN_PAGES``..``MAX_PAGES``. Failures raise the typed exceptions from
+    ``src.exceptions`` — never a guessed price.
+
+    Args:
+        pdf_bytes: Raw bytes of a PDF document
+        dpi: Resolution for rendering pages (default from config)
+        calculator: Optional pre-built CostCalculator (e.g. the API's cached
+            instance) to avoid reloading the model on every request
+
+    Returns:
+        The same dict as :meth:`CostCalculator.calculate_cost`:
+        ``total_pages``, ``total_price``, ``details``, ``processing_time``
+
+    Raises:
+        InvalidPDFError: If the payload is not bytes or not a readable PDF
+        FileSizeError: If the payload exceeds ``MAX_FILE_SIZE_MB``
+        PageCountError: If the page count is outside the allowed range
+        PredictionError: If feature extraction or prediction fails
+    """
+    if not isinstance(pdf_bytes, (bytes, bytearray, memoryview)):
+        raise InvalidPDFError(
+            f"PDF payload must be bytes, not {type(pdf_bytes).__name__}"
+        )
+
+    pdf_bytes = bytes(pdf_bytes)
+
+    file_size_mb = len(pdf_bytes) / (1024 * 1024)
+    if file_size_mb > MAX_FILE_SIZE_MB:
+        raise FileSizeError(file_size_mb, MAX_FILE_SIZE_MB)
+
+    if not pdf_bytes.startswith(b"%PDF"):
+        raise InvalidPDFError("Payload is not a PDF (missing %PDF header)")
+
+    try:
+        pdf = pymupdf.open(stream=pdf_bytes, filetype="pdf")
+    except Exception as e:
+        logger.error(f"Failed to open PDF stream: {str(e)}")
+        raise InvalidPDFError(f"Cannot open PDF stream: {str(e)}")
+
+    try:
+        page_count = len(pdf)
+        if not (MIN_PAGES <= page_count <= MAX_PAGES):
+            raise PageCountError(page_count, MIN_PAGES, MAX_PAGES)
+
+        calc = calculator if calculator is not None else CostCalculator()
+        return calc.calculate_cost(pdf, dpi=dpi)
+    finally:
+        pdf.close()
