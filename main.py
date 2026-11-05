@@ -24,7 +24,7 @@ with st.sidebar:
         - 🎯 99% F1 Score  
         - 📊 Transparent & interactive cost breakdown
 
-        🔗 [Read the full story](https://rasyidev.pages.dev/projects/print-cost)  
+        🔗 [Read the full story](https://rasyi.dev/projects/print-cost)  
         💻 [View source code](https://github.com/rasyidev/print-cost)
         """
     )
